@@ -1,5 +1,29 @@
 const mongoose = require('mongoose');
 
+const PostSchema = new mongoose.Schema({
+    platform: String,
+    post_id: String,
+    username: String,
+    text: String,
+    timestamp: mongoose.Schema.Types.Mixed,
+    likes: Number,
+    comments: Number,
+    shares: Number,
+    url: mongoose.Schema.Types.Mixed,
+  });
+
+const CommunityPostSchema = new mongoose.Schema({
+    id: String,
+    title: String,
+    summary: String,
+    body: String,
+    imageURL: String,
+    postTime: Date,
+    reacts: Number,
+    views: Number,
+    isPoll: Boolean,
+  });
+
 const eventSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -10,6 +34,9 @@ const eventSchema = new mongoose.Schema({
     required: true
   },
   description: {
+    type: String
+  },
+  category: {
     type: String
   },
   location: {
@@ -31,7 +58,9 @@ const eventSchema = new mongoose.Schema({
       },
     },
   ],
-
+  hashtags: [{ type: String }], 
+  posts: [PostSchema],
+  communityPosts: [CommunityPostSchema],
 }, {
   timestamps: true // adds createdAt and updatedAt fields
 });

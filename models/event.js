@@ -36,6 +36,9 @@ const eventSchema = new mongoose.Schema({
   description: {
     type: String
   },
+  passkey: {
+    type: String
+  },
   category: {
     type: String
   },

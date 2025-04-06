@@ -90,7 +90,7 @@ app.get('/api/users', async (req, res) => {
 
   app.post('/api/users', async (req, res) => {
     try {
-        const newUser = new User({...req.body}); 
+        const newUser = new User(req.body); 
         await newUser.save();
       res.status(200).json({ newUser });
     } catch (error) {
@@ -141,7 +141,7 @@ app.post('/api/events', async (req, res) => {
 
     const updateEvent = await Event.findByIdAndUpdate(
         eventId,
-        { $push: { posts: info } },
+        { $push: { communityPosts: info } },
       );
   
       res.status(201).json({ message: 'Post added successfully', event: updateEvent });
@@ -174,18 +174,27 @@ app.post('/api/events', async (req, res) => {
     // console.log(req.body);
     try {
       const { data, eventId } = req.body;
-      const problemPath = `blocks.${data.name-1}.problems.${data.issue}`;
+    //   console.log(data);
+    //   console.log(eventId);
+    //   const problemPath = `blocks[${data.name-1}].problems.${data.issue}`;
+      const event = await Event.findById(eventId);
 
-      const result = await Event.updateOne(
-        { _id: eventId },
-        {
-          $inc: {
-            [problemPath]: 1
-          }
-        }
-      );
+      const targetBlock = event.blocks[data.name-1];
+
+    // Initialize problems map if it doesn't exist
+    if (!targetBlock.problems) {
+      targetBlock.problems = new Map();
+    }
+
+    // Get current count or default to 0, then increment
+    const currentCount = targetBlock.problems.get(data.issue) || 0;
+    // console.log(currentCount)
+    targetBlock.problems.set(data.issue, currentCount + 1);
+    await event.save();
+    // console.log(event.blocks[data.name-1]);
+
     
-      res.status(201).json({ message: 'Problem updated successfully', event: result });
+      res.status(201).json({ message: 'Problem updated successfully', event: event });
     } catch (error) {
       console.error('Error updatng problem:', error);
       res.status(500).json({ error: 'Failed to update problem' });
@@ -211,6 +220,32 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     res.status(500).json({ error: 'Failed to upload image' });
   }
 })
+
+app.post('/api/events/alert', async (req, res) => {
+    const { eventId, alert } = req.body;
+  
+    if (!eventId || !alert) {
+      return res.status(400).json({ error: 'Missing eventId or alert message' });
+    }
+  
+    try {
+      const updatedEvent = await Event.findByIdAndUpdate(
+        eventId,
+        { $push: { alerts: alert } },
+        { new: true }
+      );
+  
+      if (!updatedEvent) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+  
+      res.status(200).json({ message: 'Alert added successfully', event: updatedEvent });
+    } catch (error) {
+      console.error('Error adding alert:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
 
 
 

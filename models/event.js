@@ -46,6 +46,7 @@ const eventSchema = new mongoose.Schema({
   map_url: {
     type: String
   },
+  alerts: [{ type: String }], 
   blocks: [
     {
       topLeft: {
@@ -56,6 +57,11 @@ const eventSchema = new mongoose.Schema({
         x: { type: Number },
         y: { type: Number },
       },
+      problems: {
+        type: Map,
+        of: Number,
+        default: {}
+      }    
     },
   ],
   hashtags: [{ type: String }], 
